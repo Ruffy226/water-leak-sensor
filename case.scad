@@ -1,31 +1,26 @@
-// Water Leak Sensor Case
-// Xiao ESP32-S3 with UHPPOTE probe
-// USB-C powered, screw-on access panel
+// Water Leak Sensor Case - First Pass
+// Simple enclosure for Xiao ESP32-S3 + UHPPOTE probe wire
+// USB-C powered, snap-fit or screw lid
 
 // ============================================
 // PARAMETERS
 // ============================================
 
-// Case dimensions
-case_width = 45;
-case_depth = 25;
-case_height = 55;
+// Case dimensions (compact)
+case_width = 35;
+case_depth = 20;
+case_height = 50;
 
 // Wall thickness
-wall = 2.5;
-
-// Access panel (back)
-panel_thickness = 2;
-screw_diam = 2.5;  // M2.5 screws
-screw_head_diam = 4.5;
-screw_head_depth = 2;
+wall = 2;
 
 // Xiao ESP32-S3 dimensions
 xiao_width = 21;
 xiao_depth = 17.5;
+xiao_height = 6;  // Without headers
 
-// Probe wire exit
-wire_hole = 6;  // For probe cable
+// Probe wire
+wire_diam = 5;
 
 // USB-C port
 usb_width = 9;
@@ -33,6 +28,10 @@ usb_height = 3.5;
 
 // LED indicator
 led_diam = 3;
+
+// Lid
+lid_overlap = 3;
+lid_thickness = 2;
 
 // ============================================
 // HELPERS
@@ -48,28 +47,36 @@ module rounded_box(l, w, h, r) {
 }
 
 // ============================================
-// CASE BODY (main enclosure)
+// MAIN CASE
 // ============================================
 
-module case_body() {
+module case() {
     difference() {
         // Outer shell
-        rounded_box(case_width, case_depth, case_height, 4);
+        rounded_box(case_width, case_depth, case_height, 3);
         
-        // Inner cavity (open at back)
+        // Inner cavity
         translate([wall, wall, wall])
         rounded_box(
             case_width - wall * 2,
             case_depth - wall * 2,
-            case_height
+            case_height - wall + 1
         );
         
-        // Probe wire exit (bottom, back)
+        // Lid ledge (top inner rim for snap-fit)
+        translate([wall - lid_overlap, wall - lid_overlap, case_height - lid_thickness])
+        rounded_box(
+            case_width - wall * 2 + lid_overlap * 2,
+            case_depth - wall * 2 + lid_overlap * 2,
+            lid_thickness + 1
+        );
+        
+        // Probe wire exit (bottom center)
         translate([case_width/2, case_depth/2, -1])
-        cylinder(d=wire_hole, h=wall + 2, $fn=16);
+        cylinder(d=wire_diam, h=wall + 2, $fn=16);
         
         // USB-C port (side, near top)
-        translate([-1, case_depth/2, case_height - 25])
+        translate([-1, case_depth/2, case_height - 20])
         rotate([0, 90, 0])
         hull() {
             translate([-usb_width/2 + usb_height/2, 0, 0])
@@ -79,59 +86,39 @@ module case_body() {
         }
         
         // LED hole (front, near top)
-        translate([case_width/2, -1, case_height - 15])
+        translate([case_width/2, -1, case_height - 12])
         rotate([-90, 0, 0])
         cylinder(d=led_diam, h=wall + 2, $fn=12);
         
-        // Screw holes for access panel (back)
-        // Top left
-        translate([wall + 5, case_depth - wall - 5, case_height - wall])
-        cylinder(d=screw_diam, h=wall + 2, $fn=12);
-        // Top right
-        translate([case_width - wall - 5, case_depth - wall - 5, case_height - wall])
-        cylinder(d=screw_diam, h=wall + 2, $fn=12);
-        // Bottom left
-        translate([wall + 5, case_depth - wall - 5, wall])
-        cylinder(d=screw_diam, h=wall + 2, $fn=12);
-        // Bottom right
-        translate([case_width - wall - 5, case_depth - wall - 5, wall])
-        cylinder(d=screw_diam, h=wall + 2, $fn=12);
+        // Mounting hole (back, top) - keyhole style
+        translate([case_width/2, case_depth - 1, case_height - 10])
+        rotate([90, 0, 0]) {
+            cylinder(d=4, h=wall + 2, $fn=12);
+            translate([-2, -6, 0])
+            cube([4, 6, wall + 2]);
+        }
         
-        // Screw head recesses
-        // Top left
-        translate([wall + 5, case_depth - wall - 5, case_height - panel_thickness - screw_head_depth])
-        cylinder(d=screw_head_diam, h=screw_head_depth + 1, $fn=12);
-        // Top right
-        translate([case_width - wall - 5, case_depth - wall - 5, case_height - panel_thickness - screw_head_depth])
-        cylinder(d=screw_head_diam, h=screw_head_depth + 1, $fn=12);
-        // Bottom left
-        translate([wall + 5, case_depth - wall - 5, wall + panel_thickness])
-        cylinder(d=screw_head_diam, h=screw_head_depth + 1, $fn=12);
-        // Bottom right
-        translate([case_width - wall - 5, case_depth - wall - 5, wall + panel_thickness])
-        cylinder(d=screw_head_diam, h=screw_head_depth + 1, $fn=12);
-        
-        // Mounting holes (back panel) - for wall/cabinet mounting
-        translate([case_width/4, case_depth + 1, case_height/2])
-        rotate([90, 0, 0])
-        cylinder(d=4, h=wall + 2, $fn=12);
-        
-        translate([case_width * 3/4, case_depth + 1, case_height/2])
-        rotate([90, 0, 0])
-        cylinder(d=4, h=wall + 2, $fn=12);
+        // Vent holes (sides, bottom half) - for air circulation
+        for (z = [15, 25, 35]) {
+            // Left
+            translate([-1, case_depth/2, z])
+            rotate([0, 90, 0])
+            cylinder(d=4, h=wall + 2, $fn=8);
+            
+            // Right
+            translate([case_width - wall - 1, case_depth/2, z])
+            rotate([0, 90, 0])
+            cylinder(d=4, h=wall + 2, $fn=8);
+        }
     }
     
-    // Internal mounting posts for Xiao
-    translate([wall + 5, wall + 5, wall + 8])
+    // Xiao mounting posts (inside)
+    translate([wall + 4, wall + 2, wall])
     xiao_mount();
     
-    // Cable strain relief (internal, near wire exit)
+    // Wire strain relief (internal, near wire exit)
     translate([case_width/2 - 4, case_depth/2 - 4, wall])
-    difference() {
-        cube([8, 8, 3]);
-        translate([4, 4, -1])
-        cylinder(d=wire_hole - 1, h=5, $fn=16);
-    }
+    cable_anchor();
 }
 
 // ============================================
@@ -140,12 +127,12 @@ module case_body() {
 
 module xiao_mount() {
     post_h = 4;
-    post_d = 5;
-    hole_d = 2;
+    post_d = 4;
+    hole_d = 1.5;
     
-    // Corner posts with holes for Xiao
-    for (x = [0, xiao_width - 5]) {
-        for (y = [0, xiao_depth - 5]) {
+    // Four corner posts
+    for (x = [0, xiao_width - 3]) {
+        for (y = [0, xiao_depth - 3]) {
             translate([x, y, 0])
             difference() {
                 cylinder(d=post_d, h=post_h, $fn=12);
@@ -154,53 +141,54 @@ module xiao_mount() {
             }
         }
     }
-    
-    // Support rail under USB-C
-    translate([xiao_width/2 - 3, xiao_depth + 2, 0])
-    cube([6, 3, post_h]);
 }
 
 // ============================================
-// ACCESS PANEL (back cover)
+// CABLE ANCHOR
 // ============================================
 
-module access_panel() {
-    panel_w = case_width - wall * 2;
-    panel_h = case_height - wall * 2;
-    
+module cable_anchor() {
     difference() {
-        // Panel body
-        translate([wall, wall, 0])
-        rounded_box(panel_w, wall, panel_h, 2);
+        // Base
+        cube([8, 8, 4]);
         
-        // Screw holes (countersunk from outside)
-        // Top left
-        translate([wall + 5, wall/2, case_height - wall - 5])
-        rotate([90, 0, 0]) {
-            cylinder(d=screw_diam, h=panel_thickness + 2, $fn=12);
-            translate([0, 0, panel_thickness - screw_head_depth])
-            cylinder(d=screw_head_diam, h=screw_head_depth + 1, $fn=12);
+        // Cable channel
+        translate([4, 4, -1])
+        cylinder(d=wire_diam - 1, h=6, $fn=12);
+        
+        // Zip tie slot
+        translate([-1, 3, 2])
+        cube([10, 2, 2]);
+    }
+}
+
+// ============================================
+// LID
+// ============================================
+
+module lid() {
+    difference() {
+        union() {
+            // Top plate
+            rounded_box(case_width, case_depth, lid_thickness, 3);
+            
+            // Inner rim (snap-fit)
+            translate([wall, wall, 0])
+            rounded_box(
+                case_width - wall * 2,
+                case_depth - wall * 2,
+                lid_overlap
+            );
         }
-        // Top right
-        translate([case_width - wall - 5, wall/2, case_height - wall - 5])
-        rotate([90, 0, 0]) {
-            cylinder(d=screw_diam, h=panel_thickness + 2, $fn=12);
-            translate([0, 0, panel_thickness - screw_head_depth])
-            cylinder(d=screw_head_diam, h=screw_head_depth + 1, $fn=12);
-        }
-        // Bottom left
-        translate([wall + 5, wall/2, wall + 5])
-        rotate([90, 0, 0]) {
-            cylinder(d=screw_diam, h=panel_thickness + 2, $fn=12);
-            translate([0, 0, panel_thickness - screw_head_depth])
-            cylinder(d=screw_head_diam, h=screw_head_depth + 1, $fn=12);
-        }
-        // Bottom right
-        translate([case_width - wall - 5, wall/2, wall + 5])
-        rotate([90, 0, 0]) {
-            cylinder(d=screw_diam, h=panel_thickness + 2, $fn=12);
-            translate([0, 0, panel_thickness - screw_head_depth])
-            cylinder(d=screw_head_diam, h=screw_head_depth + 1, $fn=12);
+        
+        // USB-C notch (if needed for cable clearance)
+        translate([case_width/2, case_depth - wall + 1, lid_thickness])
+        rotate([90, 0, 0])
+        hull() {
+            translate([-usb_width/2 + usb_height/2, 0, 0])
+            cylinder(d=usb_height, h=wall, $fn=12);
+            translate([usb_width/2 - usb_height/2, 0, 0])
+            cylinder(d=usb_height, h=wall, $fn=12);
         }
     }
 }
@@ -209,12 +197,12 @@ module access_panel() {
 // RENDER OPTIONS
 // ============================================
 
-// === Print both parts ===
-case_body();
-translate([case_width + 15, 0, 0]) access_panel();
+// Print both (side by side)
+case();
+translate([case_width + 10, 0, 0]) lid();
 
-// === Print case only ===
-// case_body();
+// Print case only
+// case();
 
-// === Print panel only ===
-// access_panel();
+// Print lid only
+// lid();
