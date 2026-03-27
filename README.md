@@ -1,11 +1,11 @@
 # Water Leak Sensor
 
 ## Overview
-USB-powered water leak sensor using Xiao ESP32-S3. Detects water via conductive probes and sends alerts to Home Assistant via ESPHome/WiFi.
+USB-powered water leak sensor using Xiao ESP32-S3 with UHPPOTE wired water probe. Detects water via contact closure and sends alerts to Home Assistant via ESPHome/WiFi.
 
 ## Features
 - 🔌 USB-C powered (always on)
-- 💧 Water detection via conductive probes
+- 💧 UHPPOTE wired water probe (contact sensor)
 - 📡 WiFi connectivity to Home Assistant
 - 🔔 Instant alerts when leak detected
 - 🧲 Magnetic mounting (optional)
@@ -16,20 +16,24 @@ USB-powered water leak sensor using Xiao ESP32-S3. Detects water via conductive 
 | Component | Status | Price | Notes |
 |-----------|--------|-------|-------|
 | Xiao ESP32-S3 | ✅ Have | - | Main MCU |
+| UHPPOTE Water Probe | ✅ Have | ~$10 | [Amazon 5-pack](https://www.amazon.com/dp/B07L94MMP7) |
 | USB-C cable | ✅ Have | - | Power only |
-| Water probe pins | ⏳ Needed | ~$2 | PCB header pins or wire |
-| 1MΩ resistor | ✅ Have | - | Pull-up for probe |
 | LED (red) | ✅ Have | - | Local alert indicator |
 | Magnetic latch | ✅ Have | - | Mounting bracket |
 | Case | ⏳ Design | - | 3D printed |
 
-## How It Works
+## UHPPOTE Water Probe
 
-Water is conductive. When water bridges the two probe pins:
-1. Circuit completes between GPIO and GND
-2. ESP32 detects the change
-3. Sends alert to Home Assistant
-4. LED lights up locally
+This is a **contact sensor** that acts like a switch:
+- **Dry contacts** — No voltage needed at the probe
+- **Opens/closes** based on water detection
+- **Screw terminals** — Easy wiring
+- **Mounting tab** — Keyhole for screw mounting
+
+**How it works:**
+- When dry: contacts are **OPEN** (no connection)
+- When wet: contacts **CLOSE** (short circuit)
+- Connects to ESP32 as a binary sensor
 
 ## Wiring
 
@@ -37,11 +41,11 @@ Water is conductive. When water bridges the two probe pins:
                     ┌─────────────────┐
                     │  Xiao ESP32-S3  │
                     │                 │
-    3.3V ───[1MΩ]───┤ GPIO1 (A0)      │
+    Probe COM ──────┤ GND             │
                     │                 │
-    Probe A ────────┤ GPIO1           │
-                    │                 │
-    Probe B ────────┤ GND             │
+    Probe NO ───────┤ GPIO1 (A0)      │
+                    │    [10kΩ to     │
+                    │     3.3V]       │
                     │                 │
     LED (+) ────────┤ GPIO2           │
     LED (-) ─[220Ω]─┤ GND             │
@@ -49,18 +53,11 @@ Water is conductive. When water bridges the two probe pins:
     USB-C ──────────┤ 5V / GND        │
                     └─────────────────┘
 
-Probe pins should be:
-- 5-10mm apart
-- Exposed at bottom of case
-- Gold-plated or nickel for corrosion resistance
+UHPPOTE Probe:
+  COM ─── Common (connect to GND)
+  NO  ─── Normally Open (connect to GPIO with pull-up)
+  NC  ─── Normally Closed (not used)
 ```
-
-## Probe Options
-
-1. **PCB header pins** (cheapest) — Standard 0.1" header pins
-2. **Screw terminals** — Allows external probe placement
-3. **Exposed PCB traces** — Custom PCB with edge contacts
-4. **Stainless steel wire** — Corrosion resistant
 
 ## Installation Locations
 
@@ -98,11 +95,11 @@ automation:
 
 ## Case Design
 
-- Small enclosure with probe pins exposed at bottom
+- Small enclosure with probe wires exiting bottom
 - USB-C port on back or side
 - LED indicator visible from top
-- Magnetic mount on back (uses your magnetic latch)
-- Water should not pool inside case
+- Magnetic mount on back
+- Probe can be placed on floor, sensor mounted higher
 
 ## Files
 
@@ -112,11 +109,12 @@ automation:
 
 ## Cost
 
-~$5-10 total (assuming you have the Xiao ESP32-S3)
+~$10-15 total (assuming you have the Xiao ESP32-S3)
 
 ## Next Steps
 
-- [ ] Order probe pins or decide on probe type
+- [x] UHPPOTE probe obtained
+- [ ] Wire to Xiao ESP32-S3
 - [ ] Flash ESPHome config
 - [ ] Test water detection
 - [ ] Print case

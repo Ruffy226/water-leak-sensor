@@ -48,7 +48,7 @@ captive_portal:
 # ============================================
 
 binary_sensor:
-  # Water leak detection probe
+  # Water leak detection via UHPPOTE probe (contact sensor)
   - platform: gpio
     pin:
       number: ${probe_pin}
