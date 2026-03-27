@@ -18,8 +18,11 @@ USB-powered water leak sensor using Xiao ESP32-S3 with UHPPOTE wired water probe
 | Xiao ESP32-S3 | ✅ Have | - | Main MCU |
 | UHPPOTE Water Probe | ✅ Have | ~$10 | [Amazon 5-pack](https://www.amazon.com/dp/B07L94MMP7) |
 | USB-C cable | ✅ Have | - | Power only |
+| 4.7kΩ resistor | ✅ Have | - | Pull-up for noise immunity |
+| 0.1µF capacitor (optional) | ✅ Have | - | Debounce filter |
 | LED (red) | ✅ Have | - | Local alert indicator |
 | Magnetic latch | ✅ Have | - | Mounting bracket |
+| M2.5 screws (4x) | ⏳ Needed | ~$3 | For access panel |
 | Case | ⏳ Design | - | 3D printed |
 
 ## UHPPOTE Water Probe
