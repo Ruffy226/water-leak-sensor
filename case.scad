@@ -71,9 +71,9 @@ module case() {
             lid_thickness + 1
         );
         
-        // Probe wire exit (bottom center)
-        translate([case_width/2, case_depth/2, -1])
-        cylinder(d=wire_diam, h=wall + 2, $fn=16);
+        // Probe wire exit (bottom center) - LARGE obvious slot
+        translate([case_width/2 - 6, case_depth/2 - 3, -1])
+        cube([12, 6, wall + 4]);
         
         // USB-C port (side, near top)
         translate([-1, case_depth/2, case_height - 20])
